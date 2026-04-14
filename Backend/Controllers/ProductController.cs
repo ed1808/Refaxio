@@ -1,9 +1,11 @@
 using Backend.Dtos.Product;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize(Roles = "Admin,Director")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductController(IProductService productService) : ControllerBase
@@ -19,15 +21,6 @@ public class ProductController(IProductService productService) : ControllerBase
     public async Task<IActionResult> GetById(string sku)
     {
         var product = await productService.GetByIdAsync(sku);
-        if (product is null)
-            return NotFound();
-        return Ok(product);
-    }
-
-    [HttpGet("sku/{sku}")]
-    public async Task<IActionResult> GetBySku(string sku)
-    {
-        var product = await productService.GetBySkuAsync(sku);
         if (product is null)
             return NotFound();
         return Ok(product);

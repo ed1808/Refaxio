@@ -1,9 +1,11 @@
 using Backend.Dtos.PersonType;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class PersonTypeController(IPersonTypeService personTypeService) : ControllerBase

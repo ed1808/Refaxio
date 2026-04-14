@@ -1,9 +1,11 @@
 using Backend.Dtos.Provider;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize(Roles = "Admin,Director")]
 [ApiController]
 [Route("api/[controller]")]
 public class ProviderController(IProviderService providerService) : ControllerBase

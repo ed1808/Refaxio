@@ -1,9 +1,11 @@
 using Backend.Dtos.Role;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class RoleController(IRoleService roleService) : ControllerBase

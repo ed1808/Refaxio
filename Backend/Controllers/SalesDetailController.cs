@@ -1,9 +1,11 @@
 using Backend.Dtos.SalesDetail;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SalesDetailController(ISalesDetailService salesDetailService) : ControllerBase

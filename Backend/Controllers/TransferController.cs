@@ -1,9 +1,11 @@
 using Backend.Dtos.Transfer;
 using Backend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class TransferController(ITransferService transferService) : ControllerBase
@@ -36,8 +38,6 @@ public class TransferController(ITransferService transferService) : ControllerBa
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] TransferCreateDto dto)
     {
-        if (dto.OriginStorageId == dto.DestinationStorageId)
-            return BadRequest("Origin and destination storage must be different.");
         var created = await transferService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
