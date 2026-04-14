@@ -34,28 +34,6 @@ public class InventoryMovementRepository : IInventoryMovementRepository
         return entity is null ? null : ToResponse(entity);
     }
 
-    public async Task<InventoryMovementResponseDto> CreateAsync(InventoryMovementCreateDto dto)
-    {
-        var entity = new InventoryMovement
-        {
-            productSku = dto.ProductSku,
-            storageId = dto.StorageId,
-            movementType = dto.MovementType,
-            quantity = dto.Quantity,
-            balanceAfter = 0,
-            referenceId = dto.ReferenceId,
-            userId = dto.UserId,
-            notes = dto.Notes
-        };
-        _context.InventoryMovements.Add(entity);
-        await _context.SaveChangesAsync();
-
-        await _context.Entry(entity).Reference(m => m.productSkuNavigation).LoadAsync();
-        await _context.Entry(entity).Reference(m => m.storage).LoadAsync();
-        await _context.Entry(entity).Reference(m => m.user).LoadAsync();
-        return ToResponse(entity);
-    }
-
     public async Task<IEnumerable<InventoryMovementResponseDto>> GetByProductSkuAsync(string productSku)
     {
         return await _context.InventoryMovements
