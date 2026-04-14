@@ -5,10 +5,10 @@ namespace Backend.Dtos.Product;
 public class ProductCreateDto
 {
     [Required]
-    [StringLength(50)]
+    [StringLength(20)]
     public string Sku { get; set; } = null!;
     [Required]
-    [StringLength(150)]
+    [StringLength(255)]
     public string ProductName { get; set; } = null!;
     [StringLength(500)]
     public string? ProductDescription { get; set; }

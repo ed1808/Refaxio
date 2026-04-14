@@ -5,6 +5,6 @@ namespace Backend.Dtos.DocumentIdType;
 public class DocumentIdTypeCreateDto
 {
     [Required]
-    [StringLength(100)]
+    [StringLength(150)]
     public string DocumentIdName { get; set; } = null!;
 }

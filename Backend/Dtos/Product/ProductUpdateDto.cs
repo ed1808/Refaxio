@@ -5,7 +5,7 @@ namespace Backend.Dtos.Product;
 public class ProductUpdateDto
 {
     [Required]
-    [StringLength(150)]
+    [StringLength(255)]
     public string ProductName { get; set; } = null!;
     [StringLength(500)]
     public string? ProductDescription { get; set; }

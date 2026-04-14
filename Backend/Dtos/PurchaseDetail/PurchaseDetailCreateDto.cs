@@ -5,7 +5,9 @@ namespace Backend.Dtos.PurchaseDetail;
 public class PurchaseDetailCreateDto
 {
     [Required]
-    [StringLength(50)]
+    public Guid PurchaseId { get; set; }
+    [Required]
+    [StringLength(20)]
     public string ProductSku { get; set; } = null!;
     [Range(1, int.MaxValue)]
     public int StorageId { get; set; }

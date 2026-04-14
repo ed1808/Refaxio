@@ -5,13 +5,13 @@ namespace Backend.Dtos.Provider;
 public class ProviderCreateDto
 {
     [Required]
-    [StringLength(100)]
+    [StringLength(150)]
     public string FirstName { get; set; } = null!;
-    [StringLength(100)]
+    [StringLength(150)]
     public string? MiddleName { get; set; }
-    [StringLength(100)]
+    [StringLength(150)]
     public string? FirstSurname { get; set; }
-    [StringLength(100)]
+    [StringLength(150)]
     public string? SecondSurname { get; set; }
     [Required]
     [StringLength(50)]
@@ -22,10 +22,10 @@ public class ProviderCreateDto
     public Guid PersonTypeId { get; set; }
     [Required]
     [EmailAddress]
-    [StringLength(150)]
+    [StringLength(254)]
     public string Email { get; set; } = null!;
     [Required]
-    [StringLength(20)]
+    [StringLength(10)]
     public string TelephoneNumber { get; set; } = null!;
     [Required]
     [StringLength(255)]

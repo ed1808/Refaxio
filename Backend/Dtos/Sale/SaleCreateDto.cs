@@ -12,8 +12,6 @@ public class SaleCreateDto
     public Guid CustomerId { get; set; }
     [Required]
     public Guid UserId { get; set; }
-    [Range(0, double.MaxValue)]
-    public decimal TotalAmount { get; set; }
     public decimal? TotalDiscount { get; set; }
     [Required]
     [StringLength(50)]

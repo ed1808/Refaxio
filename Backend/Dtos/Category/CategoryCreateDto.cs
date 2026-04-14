@@ -5,6 +5,6 @@ namespace Backend.Dtos.Category;
 public class CategoryCreateDto
 {
     [Required]
-    [StringLength(100)]
+    [StringLength(200)]
     public string CategoryName { get; set; } = null!;
 }

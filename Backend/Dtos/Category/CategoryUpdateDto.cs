@@ -5,7 +5,7 @@ namespace Backend.Dtos.Category;
 public class CategoryUpdateDto
 {
     [Required]
-    [StringLength(100)]
+    [StringLength(200)]
     public string CategoryName { get; set; } = null!;
     public bool? Active { get; set; }
 }
