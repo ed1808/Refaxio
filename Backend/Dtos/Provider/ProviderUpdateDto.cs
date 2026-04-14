@@ -1,16 +1,34 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Backend.Dtos.Provider;
 
 public class ProviderUpdateDto
 {
+    [Required]
+    [StringLength(100)]
     public string FirstName { get; set; } = null!;
+    [StringLength(100)]
     public string? MiddleName { get; set; }
+    [StringLength(100)]
     public string? FirstSurname { get; set; }
+    [StringLength(100)]
     public string? SecondSurname { get; set; }
+    [Required]
+    [StringLength(50)]
     public string DocumentIdNumber { get; set; } = null!;
+    [Required]
     public Guid DocTypeId { get; set; }
+    [Required]
     public Guid PersonTypeId { get; set; }
+    [Required]
+    [EmailAddress]
+    [StringLength(150)]
     public string Email { get; set; } = null!;
+    [Required]
+    [StringLength(20)]
     public string TelephoneNumber { get; set; } = null!;
+    [Required]
+    [StringLength(255)]
     public string Address { get; set; } = null!;
     public bool? Active { get; set; }
 }
