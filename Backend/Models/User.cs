@@ -34,6 +34,8 @@ public partial class User
 
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 
+    public virtual ICollection<Transfer> Transfers { get; set; } = new List<Transfer>();
+
     public virtual DocumentIdType docType { get; set; } = null!;
 
     public virtual Role role { get; set; } = null!;

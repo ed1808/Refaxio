@@ -28,5 +28,7 @@ public partial class Product
 
     public virtual ICollection<SalesDetail> SalesDetails { get; set; } = new List<SalesDetail>();
 
+    public virtual ICollection<TransferDetail> TransferDetails { get; set; } = new List<TransferDetail>();
+
     public virtual Category category { get; set; } = null!;
 }

@@ -19,4 +19,6 @@ public partial class Transfer
     public virtual Storage destinationStorage { get; set; } = null!;
 
     public virtual Storage originStorage { get; set; } = null!;
+
+    public virtual User user { get; set; } = null!;
 }

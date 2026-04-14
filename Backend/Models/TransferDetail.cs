@@ -11,4 +11,6 @@ public partial class TransferDetail
     public int quantity { get; set; }
 
     public virtual Transfer transfer { get; set; } = null!;
+
+    public virtual Product productSkuNavigation { get; set; } = null!;
 }

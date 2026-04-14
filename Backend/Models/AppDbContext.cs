@@ -417,6 +417,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.originStorageId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Transfers_originStorageId_fkey");
+
+            entity.HasOne(d => d.user).WithMany(p => p.Transfers)
+                .HasForeignKey(d => d.userId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Transfers_userId_fkey");
         });
 
         modelBuilder.Entity<TransferDetail>(entity =>
@@ -430,6 +435,11 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.transferId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("TransferDetails_transferId_fkey");
+
+            entity.HasOne(d => d.productSkuNavigation).WithMany(p => p.TransferDetails)
+                .HasForeignKey(d => d.productSku)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("TransferDetails_productSku_fkey");
 
             entity.ToTable(tb => tb.HasTrigger("trg_after_transfer_item"));
         });
