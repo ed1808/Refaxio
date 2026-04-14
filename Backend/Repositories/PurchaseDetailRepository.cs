@@ -37,6 +37,7 @@ public class PurchaseDetailRepository : IPurchaseDetailRepository
     {
         var entity = new PurchaseDetail
         {
+            purchaseId = dto.PurchaseId,
             productSku = dto.ProductSku,
             storageId = dto.StorageId,
             quantity = dto.Quantity,

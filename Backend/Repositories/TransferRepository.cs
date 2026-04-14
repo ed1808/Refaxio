@@ -17,18 +17,14 @@ public class TransferRepository : ITransferRepository
 
     public async Task<IEnumerable<TransferResponseDto>> GetAllAsync()
     {
-        var transfers = await _context.Transfers
+        return await _context.Transfers
             .Include(t => t.originStorage)
             .Include(t => t.destinationStorage)
+            .Include(t => t.user)
             .Include(t => t.TransferDetails)
+                .ThenInclude(d => d.productSkuNavigation)
+            .Select(t => ToResponse(t))
             .ToListAsync();
-
-        var userIds = transfers.Select(t => t.userId).Distinct().ToList();
-        var users = await _context.Users
-            .Where(u => userIds.Contains(u.id))
-            .ToDictionaryAsync(u => u.id, u => u.username);
-
-        return transfers.Select(t => ToResponse(t, users));
     }
 
     public async Task<TransferResponseDto?> GetByIdAsync(Guid id)
@@ -36,33 +32,26 @@ public class TransferRepository : ITransferRepository
         var entity = await _context.Transfers
             .Include(t => t.originStorage)
             .Include(t => t.destinationStorage)
+            .Include(t => t.user)
             .Include(t => t.TransferDetails)
+                .ThenInclude(d => d.productSkuNavigation)
             .FirstOrDefaultAsync(t => t.id == id);
         if (entity is null) return null;
 
-        var username = await _context.Users
-            .Where(u => u.id == entity.userId)
-            .Select(u => u.username)
-            .FirstOrDefaultAsync() ?? string.Empty;
-
-        return ToResponse(entity, new Dictionary<Guid, string> { [entity.userId] = username });
+        return ToResponse(entity);
     }
 
     public async Task<IEnumerable<TransferResponseDto>> GetByStatusAsync(string status)
     {
-        var transfers = await _context.Transfers
+        return await _context.Transfers
             .Include(t => t.originStorage)
             .Include(t => t.destinationStorage)
+            .Include(t => t.user)
             .Include(t => t.TransferDetails)
+                .ThenInclude(d => d.productSkuNavigation)
             .Where(t => t.status == status)
+            .Select(t => ToResponse(t))
             .ToListAsync();
-
-        var userIds = transfers.Select(t => t.userId).Distinct().ToList();
-        var users = await _context.Users
-            .Where(u => userIds.Contains(u.id))
-            .ToDictionaryAsync(u => u.id, u => u.username);
-
-        return transfers.Select(t => ToResponse(t, users));
     }
 
     public async Task<TransferResponseDto> CreateAsync(TransferCreateDto dto)
@@ -84,13 +73,13 @@ public class TransferRepository : ITransferRepository
 
         await _context.Entry(transfer).Reference(t => t.originStorage).LoadAsync();
         await _context.Entry(transfer).Reference(t => t.destinationStorage).LoadAsync();
+        await _context.Entry(transfer).Reference(t => t.user).LoadAsync();
+        foreach (var detail in transfer.TransferDetails)
+        {
+            await _context.Entry(detail).Reference(d => d.productSkuNavigation).LoadAsync();
+        }
 
-        var username = await _context.Users
-            .Where(u => u.id == transfer.userId)
-            .Select(u => u.username)
-            .FirstOrDefaultAsync() ?? string.Empty;
-
-        return ToResponse(transfer, new Dictionary<Guid, string> { [transfer.userId] = username });
+        return ToResponse(transfer);
     }
 
     public async Task<bool> DeleteAsync(Guid id)
@@ -103,7 +92,7 @@ public class TransferRepository : ITransferRepository
         return true;
     }
 
-    private static TransferResponseDto ToResponse(Transfer t, Dictionary<Guid, string> usersMap) => new()
+    private static TransferResponseDto ToResponse(Transfer t) => new()
     {
         Id = t.id,
         OriginStorageId = t.originStorageId,
@@ -111,7 +100,7 @@ public class TransferRepository : ITransferRepository
         DestinationStorageId = t.destinationStorageId,
         DestinationStorageName = t.destinationStorage.storageName,
         UserId = t.userId,
-        Username = usersMap.TryGetValue(t.userId, out var username) ? username : string.Empty,
+        Username = t.user.username,
         Status = t.status,
         CreatedAt = t.createdAt,
         Details = t.TransferDetails.Select(d => new TransferDetailResponseDto
@@ -119,6 +108,7 @@ public class TransferRepository : ITransferRepository
             Id = d.id,
             TransferId = d.transferId,
             ProductSku = d.productSku,
+            ProductName = d.productSkuNavigation.productName,
             Quantity = d.quantity
         }).ToList()
     };

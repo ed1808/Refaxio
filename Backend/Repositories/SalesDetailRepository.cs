@@ -37,6 +37,7 @@ public class SalesDetailRepository : ISalesDetailRepository
     {
         var entity = new SalesDetail
         {
+            saleId = dto.SaleId,
             productSku = dto.ProductSku,
             storageId = dto.StorageId,
             quantity = dto.Quantity,

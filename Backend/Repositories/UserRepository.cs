@@ -101,6 +101,13 @@ public class UserRepository : IUserRepository
         return true;
     }
 
+    public async Task<User?> GetUserEntityByUsernameAsync(string username)
+    {
+        return await _context.Users
+            .Include(u => u.role)
+            .FirstOrDefaultAsync(u => u.username == username && u.active == true);
+    }
+
     private static UserResponseDto ToResponse(User u) => new()
     {
         Id = u.id,

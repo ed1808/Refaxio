@@ -76,7 +76,7 @@ public class SaleRepository : ISaleRepository
             invoiceNumber = dto.InvoiceNumber,
             customerId = dto.CustomerId,
             userId = dto.UserId,
-            totalAmount = dto.TotalAmount,
+            totalAmount = dto.Details.Sum(d => d.Subtotal),
             totalDiscount = dto.TotalDiscount,
             status = dto.Status,
             SalesDetails = dto.Details.Select(d => new SalesDetail
