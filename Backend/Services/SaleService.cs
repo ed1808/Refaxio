@@ -41,6 +41,8 @@ public class SaleService : ISaleService
 
     public async Task<SaleResponseDto> CreateAsync(SaleCreateDto dto)
     {
+        dto.Status = "COMPLETED";
+
         if (await _customerRepository.GetByIdAsync(dto.CustomerId) is null)
             throw new KeyNotFoundException($"Customer with id '{dto.CustomerId}' not found.");
 
@@ -70,9 +72,23 @@ public class SaleService : ISaleService
         if (!ValidStatuses.Contains(dto.Status))
             throw new InvalidOperationException($"Invalid status '{dto.Status}'. Valid values are: {string.Join(", ", ValidStatuses)}.");
 
+        var sale = await _repository.GetByIdAsync(id);
+        if (sale is null) return null;
+
+        if (sale.Status == "VOIDED")
+            throw new InvalidOperationException("A voided sale cannot be modified.");
+
         return await _repository.UpdateAsync(id, dto);
     }
 
-    public Task<bool> DeleteAsync(Guid id) =>
-        _repository.DeleteAsync(id);
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var sale = await _repository.GetByIdAsync(id);
+        if (sale is null) return false;
+
+        if (sale.Status != "VOIDED")
+            throw new InvalidOperationException("Only sales with status 'VOIDED' can be deleted.");
+
+        return await _repository.DeleteAsync(id);
+    }
 }

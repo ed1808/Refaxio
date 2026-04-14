@@ -73,6 +73,14 @@ public class PurchaseService : IPurchaseService
         return await _repository.UpdateAsync(id, dto);
     }
 
-    public Task<bool> DeleteAsync(Guid id) =>
-        _repository.DeleteAsync(id);
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var purchase = await _repository.GetByIdAsync(id);
+        if (purchase is null) return false;
+
+        if (purchase.Status != "CANCELLED")
+            throw new InvalidOperationException("Only purchases with status 'CANCELLED' can be deleted.");
+
+        return await _repository.DeleteAsync(id);
+    }
 }

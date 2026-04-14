@@ -60,6 +60,11 @@ public class TransferService : ITransferService
         return await _repository.CreateAsync(dto);
     }
 
-    public Task<bool> DeleteAsync(Guid id) =>
-        _repository.DeleteAsync(id);
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var transfer = await _repository.GetByIdAsync(id);
+        if (transfer is null) return false;
+
+        throw new InvalidOperationException("Transfers cannot be deleted because stock movements cannot be reversed. Consider creating a reverse transfer instead.");
+    }
 }
