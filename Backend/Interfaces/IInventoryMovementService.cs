@@ -2,7 +2,7 @@ using Backend.Dtos.InventoryMovement;
 
 namespace Backend.Interfaces;
 
-public interface IInventoryMovementRepository
+public interface IInventoryMovementService
 {
     Task<IEnumerable<InventoryMovementResponseDto>> GetAllAsync();
     Task<InventoryMovementResponseDto?> GetByIdAsync(Guid id);
