@@ -116,7 +116,6 @@ public class ReportRepository : IReportRepository
         DateTime? startDate, DateTime? endDate, int page, int pageSize)
     {
         var salesQuery = _context.SalesDetails
-            .Include(d => d.sale)
             .Where(d => d.sale.status == "COMPLETED")
             .AsQueryable();
 
@@ -125,36 +124,46 @@ public class ReportRepository : IReportRepository
         if (endDate.HasValue)
             salesQuery = salesQuery.Where(d => d.sale.createdAt < endDate.Value.AddDays(1));
 
-        var salesAgg = salesQuery
+        var salesAgg = await salesQuery
             .GroupBy(d => d.productSku)
             .Select(g => new
             {
                 ProductSku = g.Key,
                 TotalQuantitySold = g.Sum(x => x.quantity),
                 LastSaleDate = g.Max(x => x.sale.createdAt)
-            });
+            })
+            .ToListAsync();
 
-        var grouped = _context.Products
+        var salesDict = salesAgg.ToDictionary(s => s.ProductSku);
+
+        var products = await _context.Products
             .Include(p => p.category)
             .Where(p => p.active == true)
-            .GroupJoin(salesAgg, p => p.sku, s => s.ProductSku, (p, sales) => new { Product = p, Sales = sales })
-            .SelectMany(x => x.Sales.DefaultIfEmpty(), (x, s) => new LowRotationProductDto
+            .ToListAsync();
+
+        var grouped = products
+            .Select(p =>
             {
-                Sku = x.Product.sku,
-                ProductName = x.Product.productName,
-                Brand = x.Product.brand,
-                CategoryName = x.Product.category.categoryName,
-                TotalQuantitySold = s != null ? s.TotalQuantitySold : 0,
-                LastSaleDate = s != null ? s.LastSaleDate : null
+                salesDict.TryGetValue(p.sku, out var s);
+                return new LowRotationProductDto
+                {
+                    Sku = p.sku,
+                    ProductName = p.productName,
+                    Brand = p.brand,
+                    CategoryName = p.category.categoryName,
+                    TotalQuantitySold = s?.TotalQuantitySold ?? 0,
+                    LastSaleDate = s?.LastSaleDate
+                };
             })
             .OrderBy(x => x.TotalQuantitySold)
-            .ThenBy(x => x.Sku);
+            .ThenBy(x => x.Sku)
+            .ToList();
 
-        var totalCount = await grouped.CountAsync();
-        var items = await grouped
+        var totalCount = grouped.Count;
+        var items = grouped
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToList();
 
         return new PaginatedResponseDto<LowRotationProductDto>
         {
