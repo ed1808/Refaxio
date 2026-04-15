@@ -26,7 +26,7 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.id.ToString()),
             new Claim(JwtRegisteredClaimNames.UniqueName, user.username),
-            new Claim(ClaimTypes.Role, user.role.roleName),
+            new Claim("role", user.role.roleName),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
