@@ -4,6 +4,7 @@ import { renderPagination } from "../components/pagination";
 import { showToast } from "../components/toast";
 import { reportApi } from "../api/report.api";
 import { formatCurrency, formatDate } from "../utils/format";
+import { renderBarChart, renderGroupedBarChart } from "../utils/charts";
 
 type ReportTab = {
   id: string;
@@ -13,6 +14,7 @@ type ReportTab = {
 };
 
 let currentContainer: HTMLElement;
+let chartContainer: HTMLElement;
 
 function renderReportTable(headers: string[], rows: string[][]): string {
   return `
@@ -29,6 +31,7 @@ function renderReportTable(headers: string[], rows: string[][]): string {
 
 function buildTabs(tabs: ReportTab[]): void {
   currentContainer = document.getElementById("report-content")!;
+  chartContainer = document.getElementById("report-chart-container")!;
   const tabBar = document.getElementById("report-tabs")!;
   tabBar.innerHTML = "";
 
@@ -95,10 +98,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.topSoldProducts({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-top-sold"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Marca", "Categoría", "Cant. Vendida", "Valor Total"],
           res.items.map((i) => [i.sku, i.productName, i.brand, i.categoryName, String(i.totalQuantitySold), formatCurrency(i.totalSalesValue)]),
         );
+        renderBarChart("chart-top-sold", res.items.map((i) => i.productName), res.items.map((i) => i.totalQuantitySold), "Cant. Vendida", true);
         showPagination(res.totalPages, res.page, (p) => reportTabs[0].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -110,10 +115,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.topPurchasedProducts({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-top-purchased"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Marca", "Categoría", "Cant. Comprada", "Valor Total"],
           res.items.map((i) => [i.sku, i.productName, i.brand, i.categoryName, String(i.totalQuantityPurchased), formatCurrency(i.totalPurchaseValue)]),
         );
+        renderBarChart("chart-top-purchased", res.items.map((i) => i.productName), res.items.map((i) => i.totalQuantityPurchased), "Cant. Comprada", true);
         showPagination(res.totalPages, res.page, (p) => reportTabs[1].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -125,10 +132,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.lowRotationProducts({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-low-rotation"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Marca", "Categoría", "Cant. Vendida", "Última Venta"],
           res.items.map((i) => [i.sku, i.productName, i.brand, i.categoryName, String(i.totalQuantitySold), i.lastSaleDate ? formatDate(i.lastSaleDate) : "—"]),
         );
+        renderBarChart("chart-low-rotation", res.items.map((i) => i.productName), res.items.map((i) => i.totalQuantitySold), "Cant. Vendida");
         showPagination(res.totalPages, res.page, (p) => reportTabs[2].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -140,9 +149,18 @@ const reportTabs: ReportTab[] = [
     load: async ({ page }) => {
       try {
         const res = await reportApi.lowStockProducts({ page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-low-stock"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Almacén", "Stock", "Stock Mín."],
           res.items.map((i) => [i.productSku, i.productName, i.storageName, `<span class="${i.stock < i.minStock ? "text-red-600 font-semibold" : ""}">${i.stock}</span>`, String(i.minStock)]),
+        );
+        renderGroupedBarChart(
+          "chart-low-stock",
+          res.items.map((i) => `${i.productName} (${i.storageName})`),
+          [
+            { label: "Stock Actual", data: res.items.map((i) => i.stock), color: "#6366f1" },
+            { label: "Stock Mín.", data: res.items.map((i) => i.minStock), color: "#f59e0b" },
+          ],
         );
         showPagination(res.totalPages, res.page, (p) => reportTabs[3].load({ page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
@@ -155,10 +173,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.productsBySalesValue({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-sales-value"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Marca", "Categoría", "Valor Ventas"],
           res.items.map((i) => [i.sku, i.productName, i.brand, i.categoryName, formatCurrency(i.totalSalesValue)]),
         );
+        renderBarChart("chart-sales-value", res.items.map((i) => i.productName), res.items.map((i) => i.totalSalesValue), "Valor Ventas", true);
         showPagination(res.totalPages, res.page, (p) => reportTabs[4].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -170,10 +190,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ page }) => {
       try {
         const res = await reportApi.productsByInventoryValue({ page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-inventory-value"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["SKU", "Producto", "Marca", "Almacén", "Stock", "Precio", "Valor Total"],
           res.items.map((i) => [i.productSku, i.productName, i.brand, i.storageName, String(i.stock), formatCurrency(i.unitPrice), formatCurrency(i.totalValue)]),
         );
+        renderBarChart("chart-inventory-value", res.items.map((i) => i.productName), res.items.map((i) => i.totalValue), "Valor Total", true);
         showPagination(res.totalPages, res.page, (p) => reportTabs[5].load({ page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -185,10 +207,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.topCustomers({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-top-customers"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["Cliente", "Documento", "Nro. Ventas", "Monto Total"],
           res.items.map((i) => [i.fullName, i.documentIdNumber, String(i.totalSalesCount), formatCurrency(i.totalAmount)]),
         );
+        renderBarChart("chart-top-customers", res.items.map((i) => i.fullName), res.items.map((i) => i.totalAmount), "Monto Total");
         showPagination(res.totalPages, res.page, (p) => reportTabs[6].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -200,10 +224,12 @@ const reportTabs: ReportTab[] = [
     load: async ({ startDate, endDate, page }) => {
       try {
         const res = await reportApi.topSellers({ startDate, endDate, page, pageSize: 10 });
+        chartContainer.innerHTML = `<div class="relative h-56"><canvas id="chart-top-sellers"></canvas></div>`;
         currentContainer.innerHTML = renderReportTable(
           ["Vendedor", "Usuario", "Nro. Ventas", "Monto Total"],
           res.items.map((i) => [i.fullName, i.username, String(i.totalSalesCount), formatCurrency(i.totalAmount)]),
         );
+        renderBarChart("chart-top-sellers", res.items.map((i) => i.fullName), res.items.map((i) => i.totalAmount), "Monto Total");
         showPagination(res.totalPages, res.page, (p) => reportTabs[7].load({ startDate, endDate, page: p }));
       } catch (err) { showToast(err instanceof Error ? err.message : "Error", "error"); }
     },
@@ -222,6 +248,7 @@ export async function reportsPage(): Promise<void> {
       <div id="report-tabs" class="flex flex-wrap gap-1 border-b bg-gray-50 px-2 pt-2"></div>
       <div class="p-4">
         <div id="report-filters"></div>
+        <div id="report-chart-container" class="mb-4"></div>
         <div id="report-content"></div>
       </div>
     </div>

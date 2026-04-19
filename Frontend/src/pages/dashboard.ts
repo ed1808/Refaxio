@@ -5,6 +5,7 @@ import { storageApi } from "../api/storage.api";
 import { saleApi } from "../api/sale.api";
 import { purchaseApi } from "../api/purchase.api";
 import { formatCurrency } from "../utils/format";
+import { renderBarChart, renderDoughnutChart } from "../utils/charts";
 
 export async function dashboardPage(): Promise<void> {
   const content = getContent();
@@ -74,6 +75,27 @@ export async function dashboardPage(): Promise<void> {
         </div>
       </div>
 
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">Ventas vs Compras</h2>
+          <div class="relative h-52">
+            <canvas id="dash-chart-donut"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">Últimas 5 Ventas</h2>
+          <div class="relative h-52">
+            <canvas id="dash-chart-sales"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">Últimas 5 Compras</h2>
+          <div class="relative h-52">
+            <canvas id="dash-chart-purchases"></canvas>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl border border-gray-200 p-5">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Últimas Ventas</h2>
@@ -107,6 +129,30 @@ export async function dashboardPage(): Promise<void> {
         </div>
       </div>
     `;
+
+    // ── Charts ──
+    const recentSales = sales.slice(0, 5);
+    const recentPurchases = purchases.slice(0, 5);
+
+    renderDoughnutChart(
+      "dash-chart-donut",
+      ["Ventas", "Compras"],
+      [totalSales, totalPurchases],
+    );
+
+    renderBarChart(
+      "dash-chart-sales",
+      recentSales.map((s) => s.invoiceNumber),
+      recentSales.map((s) => s.totalAmount),
+      "Monto",
+    );
+
+    renderBarChart(
+      "dash-chart-purchases",
+      recentPurchases.map((p) => p.providerInvoiceNumber),
+      recentPurchases.map((p) => p.totalAmount),
+      "Monto",
+    );
   } catch (err) {
     content.innerHTML = `<p class="text-red-500">Error al cargar el dashboard: ${err instanceof Error ? err.message : "Error desconocido"}</p>`;
   }
